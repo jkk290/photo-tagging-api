@@ -19,9 +19,7 @@ describe('POST /api/characters/verify', () => {
             found: true
         });
     });
-});
 
-describe('POST /api/characters/verify', () => {
     test('should return 404 and "not found" status if character is not found', async () => {
         const testPayload = {
             name: 'Waldo',
@@ -39,10 +37,8 @@ describe('POST /api/characters/verify', () => {
             found: false
         });
     });
-});
 
-describe('POST /api/characters/verify', () => {
-    test('should return 400 bad request when invalid data sent', async () => {
+    test('should return 400 and data requirements message when invalid data sent', async () => {
         const testPayload = {
             name: 'Waldo',
             posX: 'abc',
@@ -55,7 +51,24 @@ describe('POST /api/characters/verify', () => {
 
         expect(response.statusCode).toBe(400);
         expect(response.body).toEqual({
-            message: 'Invalid data sent'
+            message: 'Name must be string and posX & posY must be int'
+        });
+    });
+
+    test('should return 400 and missing data message when missing data sent', async () => {
+        const testPayload = {
+            name: undefined,
+            posX: 293,
+            posY: '',
+        };
+
+        const response = await request(app)
+            .post('/api/characters/verify')
+            .send(testPayload);
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body).toEqual({
+            message: 'Missing name, posX, and/or posY'
         });
     });
 });

@@ -11,9 +11,15 @@ app.get('/api', (req, res) => res.send('Hello, world!'));
 
 app.post('/api/characters/verify', async (req, res) => {
 
+    if ((req.body.name === undefined) || (req.body.name === '') || (req.body.posX === undefined) || (req.body.posY === undefined)) {
+        return res.status(400).json({
+            message: 'Missing name, posX, and/or posY'
+        });
+    };
+
     if ((Number.isNaN(parseInt(req.body.posX))) || (Number.isNaN(parseInt(req.body.posY)))) {
         return res.status(400).json({
-            message: 'Invalid data sent'
+            message: 'Name must be string and posX & posY must be int'
         });
     };
 
@@ -35,7 +41,7 @@ app.post('/api/characters/verify', async (req, res) => {
         },
     });
 
-    if (result.name === req.body.name) {
+    if (result && result.name === req.body.name) {
         res.status(200).json({
             message: 'Character found!',
             found: true,
