@@ -1,9 +1,8 @@
 require('dotenv').config();
 const express = require('express');
-const { PrismaClient, Prisma } = require('../generated/prisma');
+const prisma = require('./prisma');
 
 const app = express();
-const prisma = new PrismaClient();
 
 app.use(express.json());
 
@@ -47,11 +46,12 @@ app.post('/api/characters/verify', async (req, res) => {
             found: true,
         });
     } else {
-        res.status(404).json({
+        return res.status(404).json({
             message: 'Character not found',
             found: false,
         });
-    }
+    };
+
 });
 
 module.exports = app;

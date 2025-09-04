@@ -1,13 +1,22 @@
 const request = require('supertest');
 const app = require('../src/server');
+const mockPrisma = require('../__mocks__/mockPrisma');
+
+jest.mock('../src/prisma', () => require('../__mocks__/mockPrisma'));
 
 describe('POST /api/characters/verify', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     test('should return 200 OK and "found" status if character is found', async () => {
         const testPayload = {
             name: 'Waldo',
             posX: 445,
             posY: 248
         };
+
+        mockPrisma.character.findFirst.mockResolvedValueOnce({ name: 'Waldo', posX:445, posY:245 });
 
         const response = await request(app)
             .post('/api/characters/verify')
@@ -27,10 +36,12 @@ describe('POST /api/characters/verify', () => {
             posY: 248
         };
 
+        mockPrisma.character.findFirst.mockResolvedValueOnce();
+
         const response = await request(app)
             .post('/api/characters/verify')
             .send(testPayload);
-
+        
         expect(response.statusCode).toBe(404);
         expect(response.body).toEqual({
             message: 'Character not found',
