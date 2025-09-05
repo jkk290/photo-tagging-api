@@ -16,7 +16,7 @@ app.post('/api/characters/verify', async (req, res) => {
         });
     };
 
-    if ((Number.isNaN(parseInt(req.body.posX))) || (Number.isNaN(parseInt(req.body.posY)))) {
+    if ((Number.isNaN(parseInt(req.body.posX))) || (Number.isNaN(parseInt(req.body.posY))) || typeof req.body.name !== 'string') {
         return res.status(400).json({
             message: 'Name must be string and posX & posY must be int'
         });
@@ -53,5 +53,40 @@ app.post('/api/characters/verify', async (req, res) => {
     };
 
 });
+
+app.get('/api/records', async (req, res) => {
+    const records = await prisma.record.findMany();
+
+    if (records) {
+        res.status(200).json(records);
+    } else {
+        res.status(404).json({
+            message: 'No records found'
+        })
+    }
+});
+
+app.post('/api/records', async (req, res) => {
+    if (req.body.playerName === undefined || req.body.playerName === '' || req.body.timer === undefined) {
+        return res.status(400).json({
+            message: 'Missing name and/or timer'
+        });
+    };
+    
+    if (typeof req.body.playerName !== 'string' || (Number.isNaN(parseInt(req.body.timer)))) {
+        return res.status(400).json({
+            message: 'Name must be a string and timer must be an int'
+        });
+    };
+
+    const newRecord = await prisma.record.create({
+        data: {
+            playerName: req.body.playerName,
+            timer: parseInt(req.body.timer)
+        }
+    });
+
+    res.status(201).json(newRecord);
+})
 
 module.exports = app;
