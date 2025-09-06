@@ -26,3 +26,8 @@ model Record {
   playerName  String
   timer Int
 }
+
+model Game {
+  gameId String @id @unique
+  gameStart DateTime
+}

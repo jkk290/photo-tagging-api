@@ -89,4 +89,22 @@ app.post('/api/records', async (req, res) => {
     res.status(201).json(newRecord);
 })
 
+app.post('/api/games', async (req, res) => {
+    if (req.body.gameStart) {
+        const startTime = Date.now();
+        const newGame = await prisma.game.create({
+            data: {
+                gameId: req.body.gameId,
+                gameStart: startTime
+            }
+        })
+
+        if (newGame) {
+            res.status(201).json({
+                started: true
+            });
+        };
+    };
+});
+
 module.exports = app;

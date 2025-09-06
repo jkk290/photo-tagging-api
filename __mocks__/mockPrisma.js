@@ -5,6 +5,10 @@ const mockPrisma = {
     record: {
         findMany: jest.fn(),
         create: jest.fn()
+    },
+    game: {
+        create: jest.fn(),
+        delete: jest.fn()
     }
 };
 
