@@ -8,7 +8,8 @@ const mockPrisma = {
     },
     game: {
         create: jest.fn(),
-        delete: jest.fn()
+        delete: jest.fn(),
+        findFirst: jest.fn()
     }
 };
 

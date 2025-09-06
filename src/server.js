@@ -100,11 +100,44 @@ app.post('/api/games', async (req, res) => {
         })
 
         if (newGame) {
-            res.status(201).json({
+            return res.status(201).json({
                 started: true
             });
         };
-    };
+    } else if (req.body.endTime && !req.body.gameStart) {
+        const startTime = await prisma.game.findFirst({
+            where: {
+                gameId: req.body.gameId
+            },
+            select: {
+                gameStart: true
+            }
+        });
+
+        if (startTime) {
+            await prisma.game.delete({
+                where: {
+                    gameId: req.body.gameId
+                }
+            });
+
+            const recordTime = parseInt(req.body.endTime) - startTime;
+
+            const record = {
+                playerName: req.body.playerName,
+                timer: recordTime
+            };
+
+            const newRecord = await prisma.record.create(record);
+
+            return res.status(201).json({
+                record: newRecord,
+                created: true
+            });
+        };
+    } else {
+        return res.status(500);
+    }
 });
 
 module.exports = app;
