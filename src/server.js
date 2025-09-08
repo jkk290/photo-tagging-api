@@ -8,6 +8,15 @@ app.use(express.json());
 
 app.get('/api', (req, res) => res.send('Hello, world!'));
 
+app.get('/api/characters', async (req, res) => {
+    const characters = await prisma.character.findMany();
+    if (!characters) {
+        return res.status(404).json({message: 'No characters found'});
+    }
+
+    return res.status(200).json(characters);
+})
+
 app.post('/api/characters/verify', async (req, res) => {
 
     if ((req.body.name === undefined) || (req.body.name === '') || (req.body.posX === undefined) || (req.body.posY === undefined)) {

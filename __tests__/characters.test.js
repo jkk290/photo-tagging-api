@@ -4,6 +4,48 @@ const mockPrisma = require('../__mocks__/mockPrisma');
 
 jest.mock('../src/prisma', () => require('../__mocks__/mockPrisma'));
 
+describe('GET /api/characters', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    })
+
+    test('should return 200 OK and array of character objects', async () => {
+        mockPrisma.character.findMany.mockResolvedValueOnce(
+            {
+                id: 1,
+                name: 'Waldo',
+                posX: 445,
+                posY: 245
+            },
+            {
+                id: 2,
+                name: 'Woof',
+                posX: 611,
+                posY: 489
+            }
+        )
+
+        const response = await request(app)
+            .get('/api/characters');
+
+        expect(response.statusCode).toBe(200);
+        expect(response.body).toEqual(
+            {
+                id: 1,
+                name: 'Waldo',
+                posX: 445,
+                posY: 245
+            },
+            {
+                id: 2,
+                name: 'Woof',
+                posX: 611,
+                posY: 489
+            }
+        );
+    })
+})
+
 describe('POST /api/characters/verify', () => {
     beforeEach(() => {
         jest.clearAllMocks();

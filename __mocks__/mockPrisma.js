@@ -1,6 +1,7 @@
 const mockPrisma = {
     character: {
-        findFirst: jest.fn()
+        findFirst: jest.fn(),
+        findMany: jest.fn()
     },
     record: {
         findMany: jest.fn(),
