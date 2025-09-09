@@ -29,5 +29,5 @@ model Record {
 
 model Game {
   gameId String @id @unique
-  gameStart DateTime
+  gameStart BigInt
 }

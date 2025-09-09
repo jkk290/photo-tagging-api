@@ -6,6 +6,7 @@ const prisma = require('./prisma');
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.get('/api', (req, res) => res.send('Hello, world!'));
 
@@ -102,15 +103,17 @@ app.post('/api/records', async (req, res) => {
 app.post('/api/games', async (req, res) => {
     if (req.body.gameStart) {
         const startTime = Date.now();
+        const gameId = crypto.randomUUID();
         const newGame = await prisma.game.create({
             data: {
-                gameId: req.body.gameId,
+                gameId: gameId,
                 gameStart: startTime
             }
         })
 
         if (newGame) {
             return res.status(201).json({
+                gameId: gameId,
                 started: true
             });
         };

@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const request = require('supertest');
 const app = require('../src/server');
 const mockPrisma = require('../__mocks__/mockPrisma');
@@ -10,15 +9,13 @@ describe('POST /api/games', () => {
         jest.clearAllMocks();
     });
 
-    test('should receive status 201 and game started true', async () => {
-        const gameId = crypto.randomUUID();
+    test('should receive status 201 and game started true with Id', async () => {
         const testPayload = {
-            gameId: gameId,
             gameStart: true
-        }
+        };
 
         mockPrisma.game.create.mockResolvedValueOnce({
-            gameId: gameId,
+            gameId: 'some-id',
             gameStart: Date.now()
         });
         
@@ -28,6 +25,7 @@ describe('POST /api/games', () => {
 
         expect(response.statusCode).toBe(201);
         expect(response.body).toEqual({
+            gameId: expect.any(String),
             started: true
         });
     });
