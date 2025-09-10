@@ -154,7 +154,9 @@ app.post('/api/games/start', async (req, res) => {
 
 app.post('/api/games/end', async (req, res) => {
     try {
-        const startTime = await prisma.game.findFirst({
+        const gameEnd = Date.now();
+        
+        const { gameStart } = await prisma.game.findFirst({
             where: {
                 gameId: req.body.gameId
             },
@@ -162,6 +164,8 @@ app.post('/api/games/end', async (req, res) => {
                 gameStart: true
             }
         });
+
+        const startTime = Number(gameStart);
 
         if (startTime) {
             try {
@@ -173,16 +177,25 @@ app.post('/api/games/end', async (req, res) => {
             } catch (error) {
                 console.log('Unable to clean up game session', error)
             }            
+            const milliseconds = 1000;
+            const latencyThreshold = 6;
+            const backendTime = Math.floor((gameEnd - startTime) / milliseconds);
+            const frontendTime = parseInt(req.body.endTime);
+            let recordTime;
 
-            const recordTime = parseInt(req.body.endTime) - startTime;
-
-            const record = {
-                playerName: req.body.playerName,
-                timer: recordTime
-            };
+            if (backendTime - frontendTime <= latencyThreshold) {
+                recordTime = backendTime;
+            } else {
+                recordTime = frontendTime;
+            }
 
             try {
-                const newRecord = await prisma.record.create(record);
+                const newRecord = await prisma.record.create({
+                    data: {
+                        playerName: req.body.playerName,
+                        timer: recordTime
+                    }
+                });
                 return res.status(201).json({
                     record: newRecord,
                     created: true
