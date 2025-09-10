@@ -33,48 +33,64 @@ app.post('/api/characters/verify', async (req, res) => {
         });
     };
 
-    const minX = parseInt(req.body.posX) - 35;
-    const maxX = parseInt(req.body.posX) + 35;
-    const minY = parseInt(req.body.posY) - 35;
-    const maxY = parseInt(req.body.posY) + 35;
+    const targetBoxSize = 35;
+    const minX = parseInt(req.body.posX) - targetBoxSize;
+    const maxX = parseInt(req.body.posX) + targetBoxSize;
+    const minY = parseInt(req.body.posY) - targetBoxSize;
+    const maxY = parseInt(req.body.posY) + targetBoxSize;
 
-    const result = await prisma.character.findFirst({
-        where: {
-            posX: {
-                gte: minX,
-                lte: maxX,
+    try {
+        const result = await prisma.character.findFirst({
+            where: {
+                posX: {
+                    gte: minX,
+                    lte: maxX,
+                },
+                posY: {
+                    gte: minY,
+                    lte: maxY,
+                },
             },
-            posY: {
-                gte: minY,
-                lte: maxY,
-            },
-        },
-    });
+        });
 
-    if (result && result.name === req.body.name) {
-        res.status(200).json({
-            message: 'Character found!',
-            found: true,
-        });
-    } else {
-        return res.status(404).json({
-            message: 'Character not found',
-            found: false,
-        });
-    };
+        if (result && result.name === req.body.name) {
+            res.status(200).json({
+                message: 'Character found!',
+                found: true,
+            });
+        } else {
+            return res.status(404).json({
+                message: 'Character not found',
+                found: false,
+            });
+        };
+    } catch (error) {
+        res.status(500).json({
+            error: error,
+            message: 'Unable to verify character position'
+        })
+    };    
 
 });
 
 app.get('/api/records', async (req, res) => {
-    const records = await prisma.record.findMany();
+    try {
+        const records = await prisma.record.findMany();
 
-    if (records) {
-        res.status(200).json(records);
-    } else {
-        res.status(404).json({
-            message: 'No records found'
+        if (records) {
+            res.status(200).json(records);
+        } else {
+            res.status(404).json({
+                message: 'No records found'
+            })
+        }
+    } catch (error) {
+        res.status(500).json({
+            error: error,
+            message: 'Unable to get records'
         })
     }
+    
 });
 
 app.post('/api/records', async (req, res) => {
@@ -90,34 +106,54 @@ app.post('/api/records', async (req, res) => {
         });
     };
 
-    const newRecord = await prisma.record.create({
-        data: {
-            playerName: req.body.playerName,
-            timer: parseInt(req.body.timer)
-        }
-    });
+    try {
+        const newRecord = await prisma.record.create({
+            data: {
+                playerName: req.body.playerName,
+                timer: parseInt(req.body.timer)
+            }
+        });
 
-    res.status(201).json(newRecord);
+        res.status(201).json(newRecord);
+    } catch (error) {
+        res.status(500).json({
+            error: error,
+            message: 'Unable to create new record'
+        })
+    };
+    
 })
 
-app.post('/api/games', async (req, res) => {
-    if (req.body.gameStart) {
+app.post('/api/games/start', async (req, res) => {
+    
         const startTime = Date.now();
         const gameId = crypto.randomUUID();
-        const newGame = await prisma.game.create({
-            data: {
-                gameId: gameId,
-                gameStart: startTime
-            }
-        })
 
-        if (newGame) {
-            return res.status(201).json({
-                gameId: gameId,
-                started: true
-            });
-        };
-    } else if (req.body.endTime && !req.body.gameStart) {
+        try {
+            const newGame = await prisma.game.create({
+                data: {
+                    gameId: gameId,
+                    gameStart: startTime
+                }
+            })
+
+            if (newGame) {
+                return res.status(201).json({
+                    gameId: gameId,
+                    started: true
+                });
+            };
+        } catch (error) {
+            res.status(500).json({
+                error: error,
+                message: 'Unable to start game'
+            })
+        }
+        
+});
+
+app.post('/api/games/end', async (req, res) => {
+    try {
         const startTime = await prisma.game.findFirst({
             where: {
                 gameId: req.body.gameId
@@ -128,11 +164,15 @@ app.post('/api/games', async (req, res) => {
         });
 
         if (startTime) {
-            await prisma.game.delete({
-                where: {
-                    gameId: req.body.gameId
-                }
-            });
+            try {
+                await prisma.game.delete({
+                    where: {
+                        gameId: req.body.gameId
+                    }
+                });
+            } catch (error) {
+                console.log('Unable to clean up game session', error)
+            }            
 
             const recordTime = parseInt(req.body.endTime) - startTime;
 
@@ -141,16 +181,26 @@ app.post('/api/games', async (req, res) => {
                 timer: recordTime
             };
 
-            const newRecord = await prisma.record.create(record);
-
-            return res.status(201).json({
-                record: newRecord,
-                created: true
-            });
+            try {
+                const newRecord = await prisma.record.create(record);
+                return res.status(201).json({
+                    record: newRecord,
+                    created: true
+                });
+            } catch (error) {
+                return res.status(500).json({
+                    error: error,
+                    message: 'Unable to create new record'
+                })
+            }
+            
         };
-    } else {
-        return res.status(500);
-    }
+    } catch (error) {
+        res.status(500).json({
+            error: error,
+            message: 'Unable to end game'
+        })
+    }; 
 });
 
 module.exports = app;

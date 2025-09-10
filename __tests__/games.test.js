@@ -4,7 +4,7 @@ const mockPrisma = require('../__mocks__/mockPrisma');
 
 jest.mock('../src/prisma', () => require('../__mocks__/mockPrisma'));
 
-describe('POST /api/games', () => {
+describe('POST /api/games/start', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
@@ -20,7 +20,7 @@ describe('POST /api/games', () => {
         });
         
         const response = await request(app)
-            .post('/api/games')
+            .post('/api/games/start')
             .send(testPayload);
 
         expect(response.statusCode).toBe(201);
@@ -28,6 +28,12 @@ describe('POST /api/games', () => {
             gameId: expect.any(String),
             started: true
         });
+    });
+});
+
+describe('POST /api/games/end', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     test('should receive status 201 with game record created info', async () => {
@@ -48,7 +54,7 @@ describe('POST /api/games', () => {
         mockPrisma.record.create.mockResolvedValueOnce({ playerName: 'Bob', timer: 30 });
 
         const response = await request(app)
-            .post('/api/games')
+            .post('/api/games/end')
             .send(testPayload);
 
         expect(response.statusCode).toBe(201);
