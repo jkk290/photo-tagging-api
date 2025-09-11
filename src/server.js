@@ -7,7 +7,7 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: ['https://photo-tagging-production-e42e.up.railway.app/', 'photo-tagging.railway.internal'] }));
 app.get('/api', (req, res) => res.send('Hello, world!'));
 
 app.get('/api/characters', async (req, res) => {
