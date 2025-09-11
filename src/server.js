@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const prisma = require('./prisma');
+const crypto = require('crypto');
 
 const app = express();
 
